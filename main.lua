@@ -15,6 +15,8 @@ result = 'dfsdfsf' -- can be 'Player One wins!', 'Player Two wins!', 'It's a tie
 
 function love.load()
 	background = love.graphics.newImage("images/pexels-vojta-kovařík-1275415.jpg")
+	sign_sound = love.audio.newSource("sounds/458867__raclure__damage-sound-effect.mp3", 'static')
+	start_finish_sound = love.audio.newSource("sounds/243020__plasterbrain__game-start.ogg", 'static')
 	font90 = love.graphics.newFont(90)
 	font38 = love.graphics.newFont(38)
 	font32 = love.graphics.newFont(32)
@@ -121,8 +123,11 @@ function love.mousepressed(mouse_x, mouse_y, button, istouch)
    			local x_index = math.floor((mouse_x - board_x) / 100 + 1)
    			local y_index = math.floor((mouse_y - board_y) / 100 + 1)
    			local cell_index = (y_index - 1) * board_size + x_index
-   			if board[cell_index] == '' then board[cell_index] = players[current_player] end
-   			if current_player == 1 then current_player = 2 else current_player = 1 end
+   			if board[cell_index] == '' then 
+   				sign_sound:play() 
+   				board[cell_index] = players[current_player]
+   				if current_player == 1 then current_player = 2 else current_player = 1 end
+   			end
    		end
    	elseif button == 1 and state == 'start' 
    		and mouse_x > 450 and mouse_x < 700 
@@ -141,6 +146,7 @@ function love.mousepressed(mouse_x, mouse_y, button, istouch)
 				board_y = 360 - board_size/2 * 100
 				for i = 1, board_size * board_size do board[i] = ''	end
 				state = 'game'
+				start_finish_sound:play()
    			end 
    	end
 end
