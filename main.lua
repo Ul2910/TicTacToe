@@ -21,6 +21,7 @@ function love.load()
 	font38 = love.graphics.newFont(38)
 	font32 = love.graphics.newFont(32)
 	font20 = love.graphics.newFont(20)
+	font16 = love.graphics.newFont(16)
 end
 
 -- Drawing the start screen
@@ -53,6 +54,12 @@ function draw_start_finish()
 		love.graphics.setFont(font32)
 		love.graphics.print('PLAY AGAIN', 545, 555)
 	end
+	love.graphics.setFont(font16)
+	love.graphics.setColor(1, 1, 1)
+	love.graphics.print('Photo by Vojta Kovarík from pexels.com', 20, 630)	
+	love.graphics.print('Sounds:', 20, 650)
+	love.graphics.print('by Raclure from freesound.org', 30, 670)
+	love.graphics.print('by plasterbrain from freesound.org', 30, 690)
 end
 
 function love.focus(f) gameIsPaused = not f end
