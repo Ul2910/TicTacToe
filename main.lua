@@ -4,6 +4,8 @@
 
 ]]--
 
+require("finish_check")
+
 board_size = 3
 board = {}
 modes = {'human vs human', 'human vs computer', 'computer vs computer'}
@@ -11,7 +13,9 @@ current_mode = 1
 players = {'x', 'o'}
 current_player = 1
 state = 'start' -- can be 'start', 'game', 'finish'
-result = 'dfsdfsf' -- can be 'Player One wins!', 'Player Two wins!', 'It's a tie!'
+result = '' -- can be 'Player One wins!', 'Player Two wins!', 'It's a tie!'
+crossline_type = ''
+crossline_cell = 1
 
 function love.load()
 	background = love.graphics.newImage("images/pexels-vojta-kovařík-1275415.jpg")
@@ -27,13 +31,13 @@ end
 -- Drawing the start screen
 function draw_start_finish()	
 	love.graphics.setColor(1, 0.8, 0.6, 0.7)
-	love.graphics.rectangle('fill', 540, 550, 200, 50, 10, 10, 5)
+	love.graphics.rectangle('fill', 540, 630, 200, 50, 10, 10, 5)
 	if state == 'start' then
 		love.graphics.setColor(1, 0.8, 0.6, 0.7)
 		love.graphics.rectangle('fill', 440, 100, 400, 400, 10, 10, 5)
 		love.graphics.setFont(font32)
 		love.graphics.setColor(0, 0, 0)
-		love.graphics.print('PLAY', 600, 555)
+		love.graphics.print('PLAY', 600, 635)
 		love.graphics.print('Choose board size:', 450, 100)
 		love.graphics.print('Choose mode:', 450, 300)
 		love.graphics.setFont(font20)
@@ -52,7 +56,7 @@ function draw_start_finish()
 		love.graphics.print(result, 50, board_y)
 		love.graphics.setColor(0, 0, 0)
 		love.graphics.setFont(font32)
-		love.graphics.print('PLAY AGAIN', 545, 555)
+		love.graphics.print('PLAY AGAIN', 545, 635)
 	end
 	love.graphics.setFont(font16)
 	love.graphics.setColor(1, 1, 1)
@@ -81,16 +85,25 @@ function love.draw()
 		-- Print info: mode and whose turn it is now
 		if current_player == 1 then love.graphics.print('Player One\'s turn', 50, board_y)
 		else love.graphics.print('Player Two\'s turn', 50, board_y) end
+	else 
+		draw_start_finish() 
+	end
+
+	if state ~= 'start' then
 		love.graphics.setFont(font20)
+		love.graphics.setColor(1, 0.8, 0.6)
 		love.graphics.print('mode: '..modes[current_mode], board_x, board_y - 30)
+		love.graphics.setFont(font32)
+		local start_index, end_index = string.find(modes[current_mode], "%w+ %w+ ")
+		love.graphics.print('Player One: '..modes[current_mode]:gmatch("%w+")(), board_x + 100 * board_size + 50, board_y)
+		love.graphics.print('Player Two: '..string.sub(modes[current_mode], end_index + 1), board_x + 100 * board_size + 50, board_y + 50)
 		draw_board()
-	else
-		draw_start_finish()
 	end
 
 	love.graphics.setFont(font20)
 	love.graphics.setColor(1, 1, 1)
-	love.graphics.print('Developed by Uliana (github: ul2910)', 880, 680)	
+	love.graphics.print('Developed by Uliana (github: ul2910)', 880, 680)
+	if state == 'game' then check_if_finish() end
 end
 
 function draw_board()
@@ -120,6 +133,43 @@ function draw_board()
 		x = x - 100 * board_size
 		y = y + 100
 	end
+	if state == 'finish' then draw_crossline() end
+end
+
+function draw_crossline()
+	love.graphics.setColor(0, 0, 0)
+	local x, y, length, height
+	if crossline_type == "horizontal" then
+		x = board_x + 5
+		y = board_y + crossline_cell * 100 - 55
+		length = 100 * board_size - 10
+		height = 10
+	elseif crossline_type == "vertical" then
+		x = board_x + crossline_cell * 100 - 55
+		y = board_y + 5
+		length = 10
+		height = 100 * board_size - 10
+	else
+		local angle		
+		length = 140 * board_size - 15
+		height = 10
+		if crossline_cell == 1 then
+			x = board_x + 10
+			y = board_y + 5
+			angle = 0.7854
+		else
+			x = board_x + 5
+			y = board_y + crossline_cell * 100 - 10
+			angle = -0.7854
+		end
+		love.graphics.push()
+		love.graphics.translate(x, y)
+		love.graphics.rotate(angle)
+		love.graphics.rectangle('fill', 0, 0, length, height)
+		love.graphics.pop()
+		return
+	end
+	love.graphics.rectangle('fill', x, y, length, height)
 end
 
 -- If current player presses on an empty cell then we draw there player's sign (x or o)
@@ -145,7 +195,7 @@ function love.mousepressed(mouse_x, mouse_y, button, istouch)
 	   			current_mode = math.floor((mouse_y - 340) / 40 + 1)
 	   		end
    	elseif button == 1 and mouse_x > 540 and mouse_x < 740
-   		and mouse_y > 550 and mouse_y < 600 then
+   		and mouse_y > 630 and mouse_y < 680 then
    			if state == 'finish' then
    				love.event.quit('restart')
    			elseif state == 'start' then
