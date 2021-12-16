@@ -1,10 +1,12 @@
 -- Author: Uliana Gubanova (github username: ul2910)
 
 --[[ 
-
+	Callback functions, loading fonts, images, sounds,
+	drawing, mouse and esc handling, changing player
 ]]--
 
 require("finish_check")
+require("ai_moves")
 
 board_size = 3
 board = {}
@@ -14,8 +16,10 @@ players = {'x', 'o'}
 current_player = 1
 state = 'start' -- can be 'start', 'game', 'finish'
 result = '' -- can be 'Player One wins!', 'Player Two wins!', 'It's a tie!'
+computer_move = false
 crossline_type = ''
 crossline_cell = 1
+timer = 0.5
 
 function love.load()
 	background = love.graphics.newImage("images/pexels-vojta-kovařík-1275415.jpg")
@@ -53,25 +57,23 @@ function draw_start_finish()
 		end		
 	else
 		love.graphics.setColor(1, 0.8, 0.6)
-		love.graphics.print(result, 50, board_y)
+		love.graphics.print(result, 30, board_y)
 		love.graphics.setColor(0, 0, 0)
 		love.graphics.setFont(font32)
 		love.graphics.print('PLAY AGAIN', 545, 635)
-	end
-	love.graphics.setFont(font16)
-	love.graphics.setColor(1, 1, 1)
-	love.graphics.print('Photo by Vojta Kovarík from pexels.com', 20, 630)	
-	love.graphics.print('Sounds:', 20, 650)
-	love.graphics.print('by Raclure from freesound.org', 30, 670)
-	love.graphics.print('by plasterbrain from freesound.org', 30, 690)
+	end	
 end
 
 function love.focus(f) gameIsPaused = not f end
 
+-- There is 0.5 sec delay before computer's move
 function love.update(dt)
 	if gameIsPaused then return end
 	dt = math.min(dt, 0.07)
-	
+	if computer_move == true and state == 'game' then 
+		if timer < 0 then timer = 0.5 ai_move() 
+		else timer = timer - 1 * dt end
+	end
 end
 
 function love.draw()
@@ -83,8 +85,8 @@ function love.draw()
 
 	if state == 'game' then
 		-- Print info: mode and whose turn it is now
-		if current_player == 1 then love.graphics.print('Player One\'s turn', 50, board_y)
-		else love.graphics.print('Player Two\'s turn', 50, board_y) end
+		if current_player == 1 then love.graphics.print('Player One\'s turn', 30, board_y)
+		else love.graphics.print('Player Two\'s turn', 30, board_y) end
 	else 
 		draw_start_finish() 
 	end
@@ -95,15 +97,20 @@ function love.draw()
 		love.graphics.print('mode: '..modes[current_mode], board_x, board_y - 30)
 		love.graphics.setFont(font32)
 		local start_index, end_index = string.find(modes[current_mode], "%w+ %w+ ")
-		love.graphics.print('Player One: '..modes[current_mode]:gmatch("%w+")(), board_x + 100 * board_size + 50, board_y)
-		love.graphics.print('Player Two: '..string.sub(modes[current_mode], end_index + 1), board_x + 100 * board_size + 50, board_y + 50)
+		love.graphics.print('Player One: '..modes[current_mode]:gmatch("%w+")(), board_x + 100 * board_size + 20, board_y)
+		love.graphics.print('Player Two: '..string.sub(modes[current_mode], end_index + 1), board_x + 100 * board_size + 20, board_y + 50)
 		draw_board()
 	end
 
 	love.graphics.setFont(font20)
 	love.graphics.setColor(1, 1, 1)
 	love.graphics.print('Developed by Uliana (github: ul2910)', 880, 680)
-	if state == 'game' then check_if_finish() end
+	love.graphics.setFont(font16)
+	love.graphics.setColor(1, 1, 1)
+	love.graphics.print('Photo by Vojta Kovarík from pexels.com', 20, 630)	
+	love.graphics.print('Sounds:', 20, 650)
+	love.graphics.print('by Raclure from freesound.org', 30, 670)
+	love.graphics.print('by plasterbrain from freesound.org', 30, 690)
 end
 
 function draw_board()
@@ -127,15 +134,18 @@ function draw_board()
 	love.graphics.setFont(font90)
 	for i = 1, board_size do
 		for j = 1, board_size do
+			if board[(i - 1) * board_size + j] == 'x' then love.graphics.setColor(0.8, 0.1, 1)
+			else love.graphics.setColor(0.3, 0.5, 0.1) end
 			love.graphics.print(board[(i - 1) * board_size + j], x + 22, y - 10)
 			x = x + 100
 		end
 		x = x - 100 * board_size
 		y = y + 100
 	end
-	if state == 'finish' then draw_crossline() end
+	if state == 'finish' and result ~= 'It\'s a tie!' then draw_crossline() end
 end
 
+-- Draw a line crossing the winner's combination
 function draw_crossline()
 	love.graphics.setColor(0, 0, 0)
 	local x, y, length, height
@@ -174,7 +184,7 @@ end
 
 -- If current player presses on an empty cell then we draw there player's sign (x or o)
 function love.mousepressed(mouse_x, mouse_y, button, istouch)
-   	if button == 1 and state == 'game' then
+   	if button == 1 and state == 'game' and current_mode < 3 and computer_move == false then
    		if mouse_x > board_x and mouse_x < board_x + board_size * 100 
    		and mouse_y > board_y and mouse_y < board_y + board_size * 100 then
    			local x_index = math.floor((mouse_x - board_x) / 100 + 1)
@@ -183,7 +193,7 @@ function love.mousepressed(mouse_x, mouse_y, button, istouch)
    			if board[cell_index] == '' then 
    				sign_sound:play() 
    				board[cell_index] = players[current_player]
-   				if current_player == 1 then current_player = 2 else current_player = 1 end
+   				change_current_player()
    			end
    		end
    	elseif button == 1 and state == 'start' 
@@ -193,6 +203,7 @@ function love.mousepressed(mouse_x, mouse_y, button, istouch)
 	   			board_size = math.floor((mouse_y - 140) / 40 + 3)
 	   		elseif mouse_y > 340 then
 	   			current_mode = math.floor((mouse_y - 340) / 40 + 1)
+	   			if current_mode == 3 or (current_mode == 2 and who_is_first() == 2) then computer_move = true end
 	   		end
    	elseif button == 1 and mouse_x > 540 and mouse_x < 740
    		and mouse_y > 630 and mouse_y < 680 then
@@ -202,10 +213,30 @@ function love.mousepressed(mouse_x, mouse_y, button, istouch)
    				board_x = 640 - board_size/2 * 100
 				board_y = 360 - board_size/2 * 100
 				for i = 1, board_size * board_size do board[i] = ''	end
+				if current_mode == 2 and computer_move == true then modes[2] = 'computer vs human' end
 				state = 'game'
 				start_finish_sound:play()
+				-- if computer_move == true then ai_move() end
    			end 
    	end
+end
+
+-- If it's human vs computer we randomly choose who is going to be first
+function who_is_first()
+	math.randomseed(os.time())
+	if math.random(2) == 1 then 
+		return 1
+	else 
+		return 2
+	end
+end
+
+function change_current_player()
+	if current_player == 1 then current_player = 2 else current_player = 1 end
+	if current_mode == 2 and computer_move == false then computer_move = true
+	elseif current_mode == 2 and computer_move == true then computer_move = false end
+	check_if_finish()
+	-- if computer_move == true and state == 'game' then ai_move() end
 end
 
 function love.keypressed(key)

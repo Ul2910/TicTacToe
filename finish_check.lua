@@ -1,7 +1,7 @@
 -- Author: Uliana Gubanova (github username: ul2910)
 
 --[[ 
-
+	Check if game is over and there is a winner or it's a tie
 ]]--
 
 function check_if_finish()
@@ -30,11 +30,21 @@ function check_if_finish()
 		if board[board_size] ~= board[board_size + i * (board_size - 1)] or board[board_size] == '' then break end
 		if i == board_size - 1 then result_generation('diagonal', board[board_size], board_size) return end
 	end
+	check_empty_cells()
+end
+
+function check_empty_cells()
+	for i = 1, #board do
+		if board[i] == '' then return end
+	end
+	result = 'It\'s a tie!'
+	state = 'finish'
+	start_finish_sound:play()
 end
 
 function result_generation(line_type, winner_sign, cell)
 	if winner_sign == 'x' then result = 'Player One wins!'
-	else result = 'Player Two wins!' end
+	elseif winner_sign == 'o' then result = 'Player Two wins!' end
 	state = 'finish'
 	start_finish_sound:play()
 	crossline_type = line_type
