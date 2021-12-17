@@ -22,7 +22,7 @@ crossline_cell = 1
 timer = 0.5
 
 function love.load()
-	background = love.graphics.newImage("images/pexels-vojta-kovařík-1275415.jpg")
+	background = love.graphics.newImage("images/pexels-vojta-kovarik-1275415.jpg")
 	sign_sound = love.audio.newSource("sounds/458867__raclure__damage-sound-effect.mp3", 'static')
 	start_finish_sound = love.audio.newSource("sounds/243020__plasterbrain__game-start.ogg", 'static')
 	font90 = love.graphics.newFont(90)
