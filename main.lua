@@ -203,7 +203,8 @@ function love.mousepressed(mouse_x, mouse_y, button, istouch)
 	   			board_size = math.floor((mouse_y - 140) / 40 + 3)
 	   		elseif mouse_y > 340 then
 	   			current_mode = math.floor((mouse_y - 340) / 40 + 1)
-	   			if current_mode == 3 or (current_mode == 2 and who_is_first() == 2) then computer_move = true end
+	   			if current_mode == 3 or (current_mode == 2 and who_is_first() == 2) then computer_move = true
+	   			else computer_move = false end
 	   		end
    	elseif button == 1 and mouse_x > 540 and mouse_x < 740
    		and mouse_y > 630 and mouse_y < 680 then
