@@ -17,8 +17,8 @@ https://www.geeksforgeeks.org/minimax-algorithm-in-game-theory-set-4-alpha-beta-
 
 #### Screenshots:
 
-![StarterScreen](screenshots/starterScreen.jpg)
+![StarterScreen](screenshots/starterScreen.JPG)
 
-![3x3board](screenshots/3x3board.jpg)
+![3x3board](screenshots/3x3board.JPG)
 
-![5x5board](screenshots/5x5board.jpg)
+![5x5board](screenshots/5x5board.JPG)
