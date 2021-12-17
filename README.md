@@ -1,5 +1,5 @@
 # TicTacToe
-### Classi game in Lua with LÖVE
+### Classic game in Lua with LÖVE
 
 #### Description:
 3 board sizes and 3 modes available:
